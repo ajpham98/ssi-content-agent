@@ -47,14 +47,27 @@
     .gbtn { width: 100%; padding: 11px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-md); color: var(--text); font-family: inherit; transition: all 0.15s; }
     .gbtn:hover { background: var(--bg); }
     .gbtn:active { transform: scale(0.99); }
-  .apikey-bar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 10px 1rem; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; }
-  .apikey-bar label { font-size: 12px; color: var(--text-2); white-space: nowrap; }
-  .apikey-input { flex: 1; font-family: inherit; font-size: 13px; background: var(--bg); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 6px 10px; outline: none; }
-  .apikey-input:focus { border-color: var(--purple-bd); }
-  .apikey-save { font-size: 12px; padding: 5px 12px; border-radius: var(--r-md); border: 0.5px solid var(--teal-bd); background: var(--teal-bg); color: var(--teal-tx); cursor: pointer; font-family: inherit; white-space: nowrap; }
-  .apikey-save:hover { opacity: 0.85; }
-  .apikey-ok { font-size: 11px; color: var(--teal-tx); display: none; }
-  .apikey-ok.show { display: inline; }
+  .settings-btn { position: fixed; top: 14px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-2); z-index: 100; transition: all 0.15s; }
+  .settings-btn:hover { background: var(--bg); color: var(--text); border-color: var(--purple-bd); }
+  .settings-btn.has-key { border-color: var(--teal-bd); color: var(--teal-tx); background: var(--teal-bg); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; width: 100%; max-width: 420px; margin: 1rem; }
+  .modal-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1.25rem; line-height: 1.5; }
+  .modal-label { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); display: block; margin-bottom: 6px; }
+  .modal-input { width: 100%; font-family: inherit; font-size: 13px; background: var(--bg); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; outline: none; margin-bottom: 10px; }
+  .modal-input:focus { border-color: var(--purple-bd); box-shadow: 0 0 0 3px var(--purple-bg); }
+  .modal-footer { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .modal-save { font-size: 13px; padding: 7px 18px; border-radius: var(--r-md); border: 0.5px solid var(--teal-bd); background: var(--teal-bg); color: var(--teal-tx); cursor: pointer; font-family: inherit; font-weight: 500; }
+  .modal-save:hover { opacity: 0.85; }
+  .modal-cancel { font-size: 13px; padding: 7px 14px; border-radius: var(--r-md); border: 0.5px solid var(--border); background: transparent; color: var(--text-2); cursor: pointer; font-family: inherit; }
+  .modal-cancel:hover { background: var(--bg); }
+  .modal-ok { font-size: 12px; color: var(--teal-tx); }
+  .modal-link { font-size: 12px; color: var(--text-3); text-decoration: none; }
+  .modal-link:hover { color: var(--text-2); }
+  .apikey-input { display: none; }
+  .apikey-ok { display: none; }
 
   /* Multi-select content types */
   .ctype-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -156,13 +169,30 @@
   </style>
 </head>
 <body>
-<div class="apikey-bar" id="apikey-bar">
-  <label for="apikey-input">Anthropic API Key</label>
-  <input class="apikey-input" id="apikey-input" type="password" placeholder="sk-ant-..." autocomplete="off" oninput="apiKeyChanged()" />
-  <button class="apikey-save" onclick="saveApiKey()">Save</button>
-  <span class="apikey-ok" id="apikey-ok">&#10003; Saved</span>
-  <a href="https://console.anthropic.com/settings/keys" target="_blank" style="font-size:11px;color:var(--text-3);white-space:nowrap;">Get key &#8599;</a>
+<!-- Hidden input for compatibility -->
+<input class="apikey-input" id="apikey-input" type="password" autocomplete="off" />
+
+<!-- Settings button -->
+<button class="settings-btn" id="settings-btn" onclick="openSettings()" title="API Key settings">&#9881;</button>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">API Key</div>
+    <div class="modal-sub">Enter your Anthropic API key to use the agent. It is saved locally in your browser and never sent anywhere except directly to Anthropic.</div>
+    <label class="modal-label">Anthropic API Key</label>
+    <input class="modal-input" id="modal-key-input" type="password" placeholder="sk-ant-..." autocomplete="off" onkeydown="if(event.key==='Enter') saveApiKey()" />
+    <div class="modal-footer">
+      <a class="modal-link" href="https://console.anthropic.com/settings/keys" target="_blank">Get a free API key &#8599;</a>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="modal-ok" id="modal-ok" style="display:none;">&#10003; Saved!</span>
+        <button class="modal-cancel" onclick="closeSettings()">Cancel</button>
+        <button class="modal-save" onclick="saveApiKey()">Save key</button>
+      </div>
+    </div>
+  </div>
 </div>
+
 <div class="wrap">
   <div class="hdr">
     <h1>Gen Z Finance Content Agent</h1>
@@ -301,29 +331,50 @@ if (typeof pdfjsLib !== 'undefined') {
 var lang = 'vi';
 var storedApiKey = localStorage.getItem('ssi_agent_apikey') || '';
 
-function apiKeyChanged() {
-  document.getElementById('apikey-ok').className = 'apikey-ok';
+function openSettings() {
+  var modal = document.getElementById('modal-overlay');
+  modal.className = 'modal-overlay show';
+  var inp = document.getElementById('modal-key-input');
+  if (storedApiKey) inp.value = storedApiKey;
+  document.getElementById('modal-ok').style.display = 'none';
+  setTimeout(function() { inp.focus(); inp.select(); }, 50);
 }
 
+function closeSettings() {
+  document.getElementById('modal-overlay').className = 'modal-overlay';
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeSettings();
+}
+
+function apiKeyChanged() {}
+
 function saveApiKey() {
-  var key = document.getElementById('apikey-input').value.trim();
+  var key = document.getElementById('modal-key-input').value.trim();
   if (!key) return;
   localStorage.setItem('ssi_agent_apikey', key);
   storedApiKey = key;
-  document.getElementById('apikey-ok').className = 'apikey-ok show';
+  document.getElementById('modal-ok').style.display = 'inline';
+  var btn = document.getElementById('settings-btn');
+  btn.className = 'settings-btn has-key';
+  btn.title = 'API key saved - click to update';
+  setTimeout(function() { closeSettings(); }, 900);
 }
 
 function getApiKey() {
-  return document.getElementById('apikey-input').value.trim() || storedApiKey;
+  return storedApiKey || document.getElementById('modal-key-input').value.trim();
 }
 
-// Load saved key on startup
-if (storedApiKey) {
-  document.addEventListener('DOMContentLoaded', function() {
-    var inp = document.getElementById('apikey-input');
-    if (inp) inp.value = storedApiKey;
-  });
-}
+// On startup: show modal if no key saved, else mark button green
+document.addEventListener('DOMContentLoaded', function() {
+  if (storedApiKey) {
+    var btn = document.getElementById('settings-btn');
+    if (btn) { btn.className = 'settings-btn has-key'; btn.title = 'API key saved - click to update'; }
+  } else {
+    openSettings();
+  }
+});
 
 var lang = 'vi';
 var curRating = null;
@@ -889,6 +940,9 @@ function cpVersion(id) {
 window.setLang = setLang;
 window.saveApiKey = saveApiKey;
 window.apiKeyChanged = apiKeyChanged;
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+window.overlayClick = overlayClick;
 window.toggleVibe = toggleVibe;
 window.generate = generate;
 window.copyOut = copyOut;
