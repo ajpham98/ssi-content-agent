@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gen Z Finance Content Agent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f9f8f5; --surface: #ffffff;
+      --border: rgba(0,0,0,0.12); --border-soft: rgba(0,0,0,0.07);
+      --text: #1a1a18; --text-2: #5f5e5a; --text-3: #888780;
+      --purple-bg: #EEEDFE; --purple-bd: #AFA9EC; --purple-tx: #3C3489;
+      --teal-bg: #E1F5EE; --teal-bd: #5DCAA5; --teal-tx: #085041;
+      --coral-bg: #FAECE7; --coral-bd: #F0997B; --coral-tx: #993C1D;
+      --r-md: 8px; --r-lg: 12px; --r-pill: 20px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a18; --surface: #232320;
+        --border: rgba(255,255,255,0.12); --border-soft: rgba(255,255,255,0.07);
+        --text: #f0ede8; --text-2: #b4b2a9; --text-3: #888780;
+        --purple-bg: #26215C; --purple-bd: #7F77DD; --purple-tx: #CECBF6;
+        --teal-bg: #04342C; --teal-bd: #1D9E75; --teal-tx: #9FE1CB;
+        --coral-bg: #4A1B0C; --coral-bd: #D85A30; --coral-tx: #F5C4B3;
+      }
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
+    .wrap { width: 100%; max-width: 720px; }
+    .hdr { margin-bottom: 2rem; }
+    .hdr h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .hdr p { font-size: 13px; color: var(--text-2); }
+    .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; margin-bottom: 1rem; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+    @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+    .lbl { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); display: block; margin-bottom: 6px; }
+    select, textarea { width: 100%; font-family: inherit; font-size: 14px; background: var(--bg); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; outline: none; appearance: none; }
+    select:focus, textarea:focus { border-color: var(--purple-bd); box-shadow: 0 0 0 3px var(--purple-bg); }
+    textarea { height: 80px; resize: vertical; line-height: 1.6; }
+    .row { margin-bottom: 1.25rem; }
+    .btn-grp { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { font-size: 12px; padding: 5px 14px; border-radius: var(--r-pill); border: 0.5px solid var(--border); background: transparent; cursor: pointer; color: var(--text-2); font-family: inherit; transition: all 0.15s; }
+    .pill:hover { background: var(--bg); }
+    .pill.t { background: var(--teal-bg); border-color: var(--teal-bd); color: var(--teal-tx); }
+    .pill.p { background: var(--purple-bg); border-color: var(--purple-bd); color: var(--purple-tx); }
+    hr.div { border: none; border-top: 0.5px solid var(--border-soft); margin: 1.25rem 0; }
+    .gbtn { width: 100%; padding: 11px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-md); color: var(--text); font-family: inherit; transition: all 0.15s; }
+    .gbtn:hover { background: var(--bg); }
+    .gbtn:active { transform: scale(0.99); }
+  .settings-btn { position: fixed; top: 14px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-2); z-index: 100; transition: all 0.15s; }
+  .settings-btn:hover { background: var(--bg); color: var(--text); border-color: var(--purple-bd); }
+  .settings-btn.has-key { border-color: var(--teal-bd); color: var(--teal-tx); background: var(--teal-bg); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; width: 100%; max-width: 420px; margin: 1rem; }
+  .modal-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1.25rem; line-height: 1.5; }
+  .modal-label { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); display: block; margin-bottom: 6px; }
+  .modal-input { width: 100%; font-family: inherit; font-size: 13px; background: var(--bg); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; outline: none; margin-bottom: 10px; }
+  .modal-input:focus { border-color: var(--purple-bd); box-shadow: 0 0 0 3px var(--purple-bg); }
+  .modal-footer { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .modal-save { font-size: 13px; padding: 7px 18px; border-radius: var(--r-md); border: 0.5px solid var(--teal-bd); background: var(--teal-bg); color: var(--teal-tx); cursor: pointer; font-family: inherit; font-weight: 500; }
+  .modal-save:hover { opacity: 0.85; }
+  .modal-cancel { font-size: 13px; padding: 7px 14px; border-radius: var(--r-md); border: 0.5px solid var(--border); background: transparent; color: var(--text-2); cursor: pointer; font-family: inherit; }
+  .modal-cancel:hover { background: var(--bg); }
+  .modal-ok { font-size: 12px; color: var(--teal-tx); }
+  .modal-link { font-size: 12px; color: var(--text-3); text-decoration: none; }
+  .modal-link:hover { color: var(--text-2); }
+  .apikey-input { display: none; }
+  .apikey-ok { display: none; }
+
+  /* Multi-select content types */
+  .ctype-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ct-chip { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border-radius: var(--r-md); border: 0.5px solid var(--border); cursor: pointer; font-size: 13px; color: var(--text-2); background: var(--bg); transition: all 0.15s; user-select: none; }
+  .ct-chip:hover { border-color: var(--purple-bd); color: var(--text); }
+  .ct-chip.sel { background: var(--purple-bg); border-color: var(--purple-bd); color: var(--purple-tx); }
+  .ct-check { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; transition: all 0.15s; }
+  .ct-chip.sel .ct-check { background: var(--purple-tx); border-color: var(--purple-tx); color: white; }
+  .sel-hint { font-size: 11px; color: var(--text-3); margin-top: 6px; }
+
+  /* File attachment */
+  .attach-zone { border: 1px dashed var(--border); border-radius: var(--r-md); padding: 14px; text-align: center; cursor: pointer; transition: all 0.15s; margin-bottom: 1.25rem; }
+  .attach-zone:hover, .attach-zone.drag { border-color: var(--purple-bd); background: var(--purple-bg); }
+  .attach-icon { font-size: 18px; margin-bottom: 4px; }
+  .attach-txt { font-size: 13px; color: var(--text-2); }
+  .attach-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .attach-input { display: none; }
+  .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+  .file-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-md); }
+  .file-icon { font-size: 14px; }
+  .file-name { font-size: 12px; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-size { font-size: 11px; color: var(--text-3); flex-shrink: 0; }
+  .file-rm { font-size: 13px; color: var(--text-3); cursor: pointer; background: none; border: none; padding: 0 2px; flex-shrink: 0; }
+  .file-rm:hover { color: var(--coral-tx); }
+  .file-reading { font-size: 11px; color: var(--purple-tx); flex-shrink: 0; }
+
+  /* Multi-output tabs */
+  .out-tabs { display: none; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .out-tabs.show { display: flex; }
+  .out-tab { font-size: 12px; padding: 4px 12px; border-radius: var(--r-pill); border: 0.5px solid var(--border); background: transparent; cursor: pointer; color: var(--text-2); font-family: inherit; transition: all 0.15s; }
+  .out-tab.active { background: var(--purple-bg); border-color: var(--purple-bd); color: var(--purple-tx); }
+  .out-tab:hover:not(.active) { background: var(--bg); }
+    .proc { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: none; }
+    .proc.show { display: block; }
+    .proc-title { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); margin-bottom: 1rem; }
+    .steps { display: flex; flex-direction: column; }
+    .stp { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid var(--border-soft); }
+    .stp:last-child { border-bottom: none; }
+    .dot { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--text-3); flex-shrink: 0; margin-top: 1px; transition: all 0.2s; }
+    .stp.act .dot { border-color: var(--purple-bd); background: var(--purple-bg); color: var(--purple-tx); }
+    .stp.done .dot { border-color: var(--teal-bd); background: var(--teal-bg); color: var(--teal-tx); }
+    .slbl { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+    .stp.act .slbl { color: var(--purple-tx); }
+    .stp.done .slbl { color: var(--teal-tx); }
+    .sdesc { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+    .outc { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; display: none; }
+    .outc.show { display: block; }
+    .outh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .tag { font-size: 11px; padding: 3px 10px; border-radius: var(--r-pill); background: var(--purple-bg); color: var(--purple-tx); border: 0.5px solid var(--purple-bd); }
+    .cpbtn { font-size: 12px; padding: 4px 12px; cursor: pointer; background: transparent; border: 0.5px solid var(--border); border-radius: var(--r-md); color: var(--text-2); font-family: inherit; }
+    .cpbtn:hover { background: var(--bg); }
+    .outb { font-size: 14px; color: var(--text); line-height: 1.75; white-space: pre-wrap; min-height: 60px; }
+    .spin { color: var(--text-3); font-size: 13px; font-style: italic; }
+    .fb { margin-top: 1rem; border-top: 0.5px solid var(--border-soft); padding-top: 1rem; display: none; }
+    .fb.show { display: block; }
+    .rrow { display: flex; gap: 8px; margin-bottom: 10px; }
+    .rbtn { font-size: 13px; padding: 5px 14px; border-radius: var(--r-pill); border: 0.5px solid var(--border); background: transparent; cursor: pointer; color: var(--text-2); font-family: inherit; transition: all 0.15s; }
+    .rbtn.g { background: var(--teal-bg); border-color: var(--teal-bd); color: var(--teal-tx); }
+    .rbtn.b { background: var(--coral-bg); border-color: var(--coral-bd); color: var(--coral-tx); }
+    .fbtxt { width: 100%; font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; resize: vertical; min-height: 70px; line-height: 1.6; outline: none; margin-bottom: 8px; display: none; }
+    .fbtxt.show { display: block; }
+    .fbacts { display: none; gap: 8px; }
+    .fbacts.show { display: flex; }
+    .savebtn { font-size: 12px; padding: 5px 14px; border-radius: var(--r-md); border: 0.5px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text); font-family: inherit; }
+    .regbtn { font-size: 12px; padding: 5px 14px; border-radius: var(--r-md); border: 0.5px solid var(--purple-bd); background: var(--purple-bg); cursor: pointer; color: var(--purple-tx); font-family: inherit; }
+    .fbdone { font-size: 12px; color: var(--teal-tx); display: none; margin-top: 4px; }
+    .fbdone.show { display: block; }
+    .fblog { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .fbe { background: var(--bg); border: 0.5px solid var(--border-soft); border-radius: var(--r-md); padding: 8px 12px; }
+    .fbem { font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
+    .fbet { font-size: 12px; color: var(--text); line-height: 1.5; }
+
+  /* Version history */
+  .vh { margin-top: 1.5rem; display: none; }
+  .vh.show { display: block; }
+  .vh-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .vh-title { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); }
+  .vh-count { font-size: 11px; color: var(--text-3); background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-pill); padding: 2px 8px; }
+  .vlist { display: flex; flex-direction: column; gap: 10px; }
+  .vcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+  .vcard-hdr { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 0.5px solid var(--border-soft); cursor: pointer; }
+  .vcard-hdr:hover { background: var(--surface); }
+  .vcard-meta { display: flex; align-items: center; gap: 8px; }
+  .vnum { font-size: 11px; font-weight: 500; background: var(--purple-bg); color: var(--purple-tx); border: 0.5px solid var(--purple-bd); border-radius: var(--r-pill); padding: 2px 8px; }
+  .vnum.latest { background: var(--teal-bg); color: var(--teal-tx); border-color: var(--teal-bd); }
+  .vtag { font-size: 11px; color: var(--text-3); }
+  .vtime { font-size: 11px; color: var(--text-3); }
+  .vtoggle { font-size: 11px; color: var(--text-3); }
+  .vfb-pill { font-size: 11px; padding: 2px 8px; border-radius: var(--r-pill); }
+  .vfb-good { background: var(--teal-bg); color: var(--teal-tx); border: 0.5px solid var(--teal-bd); }
+  .vfb-bad { background: var(--coral-bg); color: var(--coral-tx); border: 0.5px solid var(--coral-bd); }
+  .vcard-body { padding: 14px; display: none; }
+  .vcard-body.open { display: block; }
+  .vcard-content { font-size: 13px; color: var(--text); line-height: 1.75; white-space: pre-wrap; margin-bottom: 10px; }
+  .vcard-fb { font-size: 12px; color: var(--text-2); padding: 8px 10px; background: var(--surface); border-radius: var(--r-md); border: 0.5px solid var(--border-soft); margin-top: 6px; }
+  .vcard-fb-lbl { font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
+  .vcp-btn { font-size: 11px; padding: 3px 10px; border-radius: var(--r-md); border: 0.5px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-2); font-family: inherit; }
+  .vcp-btn:hover { background: var(--bg); }
+  </style>
+</head>
+<body>
+<!-- Hidden input for compatibility -->
+<input class="apikey-input" id="apikey-input" type="password" autocomplete="off" />
+
+<!-- Settings button -->
+<button class="settings-btn" id="settings-btn" onclick="openSettings()" title="API Key settings">&#9881;</button>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">API Key</div>
+    <div class="modal-sub">Enter your Anthropic API key to use the agent. It is saved locally in your browser and never sent anywhere except directly to Anthropic.</div>
+    <label class="modal-label">Anthropic API Key</label>
+    <input class="modal-input" id="modal-key-input" type="password" placeholder="sk-ant-..." autocomplete="off" onkeydown="if(event.key==='Enter') saveApiKey()" />
+    <div class="modal-footer">
+      <a class="modal-link" href="https://console.anthropic.com/settings/keys" target="_blank">Get a free API key &#8599;</a>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="modal-ok" id="modal-ok" style="display:none;">&#10003; Saved!</span>
+        <button class="modal-cancel" onclick="closeSettings()">Cancel</button>
+        <button class="modal-save" onclick="saveApiKey()">Save key</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hdr">
+    <h1>Gen Z Finance Content Agent</h1>
+    <p>SSI Securities &mdash; vibes-coded, financially sharp, 100% trustworthy</p>
+  </div>
+
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <label class="lbl">Content type</label>
+        <select id="ctype">
+          <option value="facebook">Facebook post</option>
+          <option value="caption">Instagram caption</option>
+          <option value="linkedin">LinkedIn post</option>
+          <option value="twitter">Twitter/X thread</option>
+          <option value="tiktok">TikTok video script</option>
+          <option value="article">Website article (SEO)</option>
+          <option value="email_mkt">Email marketing</option>
+          <option value="newsletter">Newsletter blurb</option>
+          <option value="explainer">Explainer</option>
+          <option value="hot_take">Hot take</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Topic domain</label>
+        <select id="domain">
+          <option value="stocks">Stocks (VN + global)</option>
+          <option value="crypto">Crypto</option>
+          <option value="forex">Forex</option>
+          <option value="economy">Economy / macro</option>
+          <option value="finance_tips">Personal finance</option>
+          <option value="politics_markets">Politics &amp; markets</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="lbl">Topic / news hook</label>
+      <textarea id="topic" placeholder="e.g. Fed giu lai suat, VN-Index test nguong 1300, BTC ETF approval..."></textarea>
+    </div>
+
+    <hr class="div" />
+
+    <div class="row">
+      <span class="lbl">Language</span>
+      <div class="btn-grp">
+        <button class="pill t" id="lvi" onclick="setLang('vi')">Tieng Viet</button>
+        <button class="pill" id="len" onclick="setLang('en')">English</button>
+        <button class="pill" id="lmx" onclick="setLang('mixed')">Mixed</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="lbl">Tone boosters</span>
+      <div class="btn-grp" id="vibes">
+        <button class="pill p" onclick="toggleVibe(this)">witty</button>
+        <button class="pill p" onclick="toggleVibe(this)">friendly</button>
+        <button class="pill" onclick="toggleVibe(this)">hype / bullish</button>
+        <button class="pill" onclick="toggleVibe(this)">cautious / realistic</button>
+        <button class="pill" onclick="toggleVibe(this)">educational</button>
+        <button class="pill" onclick="toggleVibe(this)">hot take energy</button>
+        <button class="pill" onclick="toggleVibe(this)">meme-worthy</button>
+      </div>
+    </div>
+
+    <hr class="div" />
+
+    <div class="row">
+      <span class="lbl">Attach files <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional &mdash; PDF, Word, image)</span></span>
+      <div class="attach-zone" id="attach-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <div class="attach-icon">&#128206;</div>
+        <div class="attach-txt">Click to attach or drag &amp; drop</div>
+        <div class="attach-sub">PDF, Word (.docx), images &mdash; agent reads content to inform writing</div>
+      </div>
+      <input type="file" id="file-input" class="attach-input" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFiles(this.files)" />
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <button class="gbtn" onclick="generate()">Generate content &#x2197;</button>
+  </div>
+
+  <div class="proc" id="proc">
+    <div class="proc-title">Content creation process</div>
+    <div class="steps">
+      <div class="stp" id="s1"><div class="dot">1</div><div><div class="slbl">Understand brief</div><div class="sdesc">Analysing topic, platform, domain, language &amp; tone</div></div></div>
+      <div class="stp" id="s2"><div class="dot">2</div><div><div class="slbl">Deep research</div><div class="sdesc">Researching latest market data, trends, news &amp; context from SSI and top VN finance sources</div></div></div>
+      <div class="stp" id="s3"><div class="dot">3</div><div><div class="slbl">Apply platform rules</div><div class="sdesc">Loading algorithm guidelines &amp; best practices for this platform</div></div></div>
+      <div class="stp" id="s4"><div class="dot">4</div><div><div class="slbl">Build content outline</div><div class="sdesc">Hook &#8594; core message &#8594; structure &#8594; CTA</div></div></div>
+      <div class="stp" id="s5"><div class="dot">5</div><div><div class="slbl">Write draft</div><div class="sdesc">Generating content in brand voice with selected tone boosters</div></div></div>
+      <div class="stp" id="s6"><div class="dot">6</div><div><div class="slbl">Review &amp; refine</div><div class="sdesc">Checking language rules, compliance, disclaimer &amp; Gen Z authenticity</div></div></div>
+    </div>
+  </div>
+
+  <div class="outc" id="outc">
+    <div class="out-tabs" id="out-tabs"></div>
+    <div class="outh">
+      <span class="tag" id="otag">Facebook - Stocks - VI</span>
+      <button class="cpbtn" onclick="copyOut()">Copy</button>
+    </div>
+    <div class="outb" id="outb"></div>
+    <div class="fb" id="fbs">
+      <span class="lbl">Your feedback</span>
+      <div class="rrow">
+        <button class="rbtn" id="rbg" onclick="rate('good')">&#10003; Looks good</button>
+        <button class="rbtn" id="rbb" onclick="rate('bad')">&#10005; Needs work</button>
+      </div>
+      <textarea class="fbtxt" id="fbt" placeholder="Tell me what to improve..."></textarea>
+      <div class="fbacts" id="fbac">
+        <button class="savebtn" onclick="saveFb()">Save note</button>
+        <button class="regbtn" onclick="regenFb()">Regenerate with feedback &#x2197;</button>
+      </div>
+      <div class="fbdone" id="fbdn">Note saved!</div>
+      <div class="fblog" id="fblog"></div>
+    </div>
+  </div>
+
+  <!-- Version history -->
+  <div class="vh" id="vh">
+    <div class="vh-hdr">
+      <span class="vh-title">Version history</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="vh-count" id="vh-count">0 versions</span>
+        <button class="vcp-btn" id="export-btn" onclick="exportAll()" style="display:none;">Export all &#x2193;</button>
+      </div>
+    </div>
+    <div class="vlist" id="vlist"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// Configure PDF.js worker
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+var lang = 'vi';
+var storedApiKey = localStorage.getItem('ssi_agent_apikey') || '';
+
+function openSettings() {
+  var modal = document.getElementById('modal-overlay');
+  modal.className = 'modal-overlay show';
+  var inp = document.getElementById('modal-key-input');
+  if (storedApiKey) inp.value = storedApiKey;
+  document.getElementById('modal-ok').style.display = 'none';
+  setTimeout(function() { inp.focus(); inp.select(); }, 50);
+}
+
+function closeSettings() {
+  document.getElementById('modal-overlay').className = 'modal-overlay';
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeSettings();
+}
+
+function apiKeyChanged() {}
+
+function saveApiKey() {
+  var key = document.getElementById('modal-key-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('ssi_agent_apikey', key);
+  storedApiKey = key;
+  document.getElementById('modal-ok').style.display = 'inline';
+  var btn = document.getElementById('settings-btn');
+  btn.className = 'settings-btn has-key';
+  btn.title = 'API key saved - click to update';
+  setTimeout(function() { closeSettings(); }, 900);
+}
+
+function getApiKey() {
+  return storedApiKey || document.getElementById('modal-key-input').value.trim();
+}
+
+// On startup: show modal if no key saved, else mark button green
+document.addEventListener('DOMContentLoaded', function() {
+  if (storedApiKey) {
+    var btn = document.getElementById('settings-btn');
+    if (btn) { btn.className = 'settings-btn has-key'; btn.title = 'API key saved - click to update'; }
+  } else {
+    openSettings();
+  }
+});
+
+var lang = 'vi';
+var curRating = null;
+var fbHistory = [];
+var attachedFiles = [];
+var multiOutputs = {};
+var activeTab = null;
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('lvi').className = 'pill' + (l === 'vi' ? ' t' : '');
+  document.getElementById('len').className = 'pill' + (l === 'en' ? ' t' : '');
+  document.getElementById('lmx').className = 'pill' + (l === 'mixed' ? ' t' : '');
+}
+
+function toggleVibe(el) {
+  if (el.classList.contains('p')) { el.classList.remove('p'); } else { el.classList.add('p'); }
+}
+
+function toggleCtype(el) {
+  el.classList.toggle('sel');
+  var check = el.querySelector('.ct-check');
+  check.innerHTML = el.classList.contains('sel') ? '&#10003;' : '';
+  updateSelHint();
+}
+
+function updateSelHint() {
+  var sel = document.querySelectorAll('.ct-chip.sel');
+  var hint = document.getElementById('sel-hint');
+  if (hint) hint.textContent = sel.length + ' content type' + (sel.length !== 1 ? 's' : '') + ' selected';
+}
+
+function getSelectedCtypes() {
+  var chips = document.querySelectorAll('.ct-chip.sel');
+  var arr = [];
+  for (var i = 0; i < chips.length; i++) { arr.push(chips[i].getAttribute('data-ctype')); }
+  return arr;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('attach-zone').classList.add('drag');
+}
+
+function handleDragLeave(e) {
+  document.getElementById('attach-zone').classList.remove('drag');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('attach-zone').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  for (var i = 0; i < files.length; i++) {
+    addFile(files[i]);
+  }
+}
+
+function addFile(file) {
+  var id = Date.now() + Math.random();
+  var entry = { id: id, file: file, content: null, type: getFileType(file) };
+  attachedFiles.push(entry);
+  renderFileList();
+  readFile(entry);
+}
+
+function getFileType(file) {
+  var name = file.name.toLowerCase();
+  if (name.endsWith('.pdf')) return 'pdf';
+  if (name.endsWith('.doc') || name.endsWith('.docx')) return 'doc';
+  if (/\.(png|jpg|jpeg|gif|webp)$/.test(name)) return 'image';
+  return 'other';
+}
+
+function fileIcon(type) {
+  if (type === 'pdf') return '&#128209;';
+  if (type === 'doc') return '&#128196;';
+  if (type === 'image') return '&#128247;';
+  return '&#128206;';
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function removeFile(id) {
+  attachedFiles = attachedFiles.filter(function(f) { return f.id !== id; });
+  renderFileList();
+}
+
+function renderFileList() {
+  var list = document.getElementById('file-list');
+  if (attachedFiles.length === 0) { list.innerHTML = ''; return; }
+  var html = '';
+  for (var i = 0; i < attachedFiles.length; i++) {
+    var f = attachedFiles[i];
+    var statusHtml = f.content === null
+      ? '<span class="file-reading">Reading...</span>'
+      : '<span style="font-size:11px;color:var(--teal-tx);">Ready</span>';
+    html += '<div class="file-item">';
+    html += '<span class="file-icon">' + fileIcon(f.type) + '</span>';
+    html += '<span class="file-name">' + f.file.name + '</span>';
+    html += '<span class="file-size">' + formatSize(f.file.size) + '</span>';
+    html += statusHtml;
+    html += '<button class="file-rm" onclick="removeFile(' + f.id + ')">&#x2715;</button>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function readFile(entry) {
+  var reader = new FileReader();
+  if (entry.type === 'image') {
+    reader.onload = function(e) {
+      entry.content = e.target.result;
+      renderFileList();
+    };
+    reader.readAsDataURL(entry.file);
+  } else if (entry.type === 'pdf') {
+    // Use PDF.js to extract real text from PDF
+    reader.onload = function(e) {
+      var arrayBuffer = e.target.result;
+      extractPdfText(arrayBuffer, entry);
+    };
+    reader.readAsArrayBuffer(entry.file);
+  } else {
+    reader.onload = function(e) {
+      entry.content = e.target.result;
+      renderFileList();
+    };
+    reader.readAsText(entry.file);
+  }
+}
+
+function extractPdfText(arrayBuffer, entry) {
+  if (typeof pdfjsLib === 'undefined') {
+    // PDF.js not loaded yet - fallback message
+    entry.content = '[PDF attached: ' + entry.file.name + ' - text extraction unavailable, agent will note the file was provided]';
+    renderFileList();
+    return;
+  }
+  var loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  loadingTask.promise.then(function(pdf) {
+    var totalPages = pdf.numPages;
+    var pagePromises = [];
+    var maxPages = Math.min(totalPages, 20); // cap at 20 pages to avoid token overload
+    for (var i = 1; i <= maxPages; i++) {
+      pagePromises.push(pdf.getPage(i).then(function(page) {
+        return page.getTextContent().then(function(tc) {
+          return tc.items.map(function(item) { return item.str; }).join(' ');
+        });
+      }));
+    }
+    return Promise.all(pagePromises);
+  }).then(function(pages) {
+    var fullText = pages.join('\n\n');
+    entry.content = fullText.trim() || '[PDF has no extractable text - may be a scanned image PDF]';
+    if (entry.file.name) entry.content = 'FILE: ' + entry.file.name + '\n\n' + entry.content;
+    renderFileList();
+  }).catch(function(err) {
+    entry.content = '[Could not extract PDF text: ' + err.message + ']';
+    renderFileList();
+  });
+}
+
+async function extractFileContext() {
+  if (attachedFiles.length === 0) return '';
+  var parts = [];
+  for (var i = 0; i < attachedFiles.length; i++) {
+    var f = attachedFiles[i];
+    if (f.content === null) continue;
+    if (f.type === 'image') {
+      parts.push('ATTACHED IMAGE: ' + f.file.name + ' (image file - analyse visually for brand/visual context)');
+    } else {
+      var preview = typeof f.content === 'string' ? f.content.substring(0, 3000) : '';
+      if (preview.trim()) {
+        parts.push('ATTACHED FILE: ' + f.file.name + '\nCONTENT EXCERPT:\n' + preview + (f.content.length > 3000 ? '\n[... truncated ...]' : ''));
+      }
+    }
+  }
+  if (parts.length === 0) return '';
+  return '\n\nATTACHED REFERENCE FILES:\n' + parts.join('\n\n---\n') + '\n\nUse the above attached file content as additional context, data, or brand reference when creating the content.';
+}
+
+function getVibes() {
+  var chips = document.querySelectorAll('#vibes .p');
+  var arr = [];
+  for (var i = 0; i < chips.length; i++) { arr.push(chips[i].textContent.trim()); }
+  return arr.join(', ') || 'friendly, witty';
+}
+
+function getLangRule() {
+  if (lang === 'vi') return 'LANGUAGE RULE: Write 100% in Vietnamese only. Every word must be Vietnamese. Do NOT mix English except universally accepted finance terms (ETF, blockchain, forex). No exceptions.';
+  if (lang === 'en') return 'LANGUAGE RULE: Write 100% in English only. No Vietnamese words at all. No exceptions.';
+  return 'LANGUAGE RULE: Mix Vietnamese and English naturally (Viet-English code-switching) as Vietnamese Gen Z texts online.';
+}
+
+function ctypeLabel(c) {
+  var m = { facebook:'Facebook', caption:'Instagram', linkedin:'LinkedIn', twitter:'Twitter/X', tiktok:'TikTok', article:'Website article', email_mkt:'Email marketing', newsletter:'Newsletter', explainer:'Explainer', hot_take:'Hot take' };
+  return m[c] || c;
+}
+
+function langLabel() { return lang === 'vi' ? 'VI' : lang === 'en' ? 'EN' : 'VI+EN'; }
+
+function fmtGuide(c) {
+  var g = {
+    facebook: 'PLATFORM: Facebook (2025 algo). First 30-60 mins critical - early comments amplify reach. Rewards genuine conversations, penalizes engagement bait. 98% top posts = NO outbound link - keep all value in post body. Optimal 50-99 chars for max reach, up to 250 words for storytelling - front-load hook in line 1. Short paragraphs. Finance: never imply risk-free returns. Best times: 12-3 PM weekdays. End with open-ended question NOT engagement bait. NOW WRITE: A Facebook post per these guidelines.',
+    caption: 'PLATFORM: Instagram (2025 algo). DM shares weighted 3-5x > likes. Saves = key signal. Keyword captions drive discovery MORE than hashtags. First 125 chars shown before See More - hook must be irresistible. Use 3-5 niche hashtags. Length: 125-180 chars for Reels, 150-300 words for educational carousels. Design for saves and DM shares. End with soft CTA: question, Save this, or Tag a friend. NOW WRITE: An Instagram caption per these guidelines.',
+    linkedin: 'PLATFORM: LinkedIn (Nexus algo 2025). Designed NOT to go viral - rewards niche expertise. Consumption rate matters. First 60-120 mins critical. Optimal 1300-3000 chars (~200-400 words). First 1-2 lines = hook before See More. Max 1-2 hashtags (3+ = major reach drop). Carousel posts 11x more impressions vs text. Avoid engagement bait, promo posts (70% reach penalty). Best Tue-Thu 8-9 AM. End with ONE genuine question. NOW WRITE: A LinkedIn post per these guidelines.',
+    twitter: 'PLATFORM: Twitter/X. Thread of 4-6 tweets numbered (1/ 2/ etc). Tweet 1 = standalone hook. Tweets 2-4 = insights or data. Tweet 5 = key takeaway. Last tweet = CTA or question. Each tweet under 240 chars. NOW WRITE: A Twitter/X thread per these guidelines.',
+    article: 'PLATFORM: Website / Google SEO (2025). Finance = YMYL - highest E-E-A-T scrutiny since March 2025 core update. REQUIRED STRUCTURE: SEO Title (primary keyword included) + Meta description (150-160 chars) + H1 + Intro answering question in first 100 words + H2/H3 sections + FAQ section (boosts AI Overview eligibility) + Conclusion + CTA. Primary keyword in title, first 100 words, one H2. TL;DR / Key Takeaways at top. Mobile-first, scannable. Investment disclaimer mandatory. NOW WRITE: A 600-900 word website article with SEO Title, Meta Description, and full article with H2 headings.',
+    email_mkt: 'PLATFORM: Email marketing (2025). Subject line = 47% of open decisions, keep under 50 chars. AVOID spam words: free, guaranteed, risk-free, earn money, no cost, miracle. Preview text 35-90 chars, complements but never repeats subject. 60%+ opens on mobile - 2-3 sentence paragraphs max, generous white space. ONE clear CTA only. P.S. line = most-read part. Best Tue-Thu 9 AM-12 PM. Finance: natural disclaimer mandatory, never promise returns. NOW WRITE: A full marketing email with SUBJECT LINE: / PREVIEW TEXT: / BODY (opening hook + 2-3 short paras + CTA in [brackets]) / P.S.: format.',
+    newsletter: 'FORMAT: Newsletter blurb, 100-150 words. Conversational, value-first tone. Lead with the most interesting insight. End with a teaser or CTA. Personal note feel, not a press release. NOW WRITE: A newsletter blurb.',
+    explainer: 'FORMAT: Beginner-friendly explainer, 150-200 words. Break down concept with relatable everyday analogies. Avoid jargon - define any term immediately. Structure: What is it -> Why it matters -> What you should know/do. NOW WRITE: An explainer.',
+    hot_take: 'FORMAT: Bold hot take, 100-150 words. Confident, slightly provocative, backed by logic and facts. Quick data point supports the take. End with debate-inviting question. Responsible with financial claims. NOW WRITE: A hot take.',
+    tiktok: 'PLATFORM: TikTok. ALGORITHM (2025): TikTok ranks by completion rate, shares, and re-watches above all else. The first 1-3 seconds are critical - hook must be a visual action, bold statement, or scroll-stopping question. Average video that performs well: 15-60 seconds. Trending sounds boost distribution. Stitch and duet potential improves reach. Finance content on TikTok performs best as: surprising facts, myth-busting, relatable money moments, dramatic market updates. Use casual conversational tone - you are talking to the camera like a friend. Keep it punchy and visual. Captions should be short and complement the spoken script. NOW WRITE: A full TikTok video script including: HOOK (first 3 seconds - what you say and do), MAIN CONTENT (what you say, any on-screen text overlays in [brackets]), CTA (last 3-5 seconds), CAPTION + 3-5 hashtags. Keep total spoken script to 30-45 seconds when read aloud.'
+  };
+  return g[c] || g['facebook'];
+}
+
+function buildSystem(ctype, vibes, domain) {
+  var p1 = 'You are a Gen Z content creator for SSI Securities Corporation (Cong ty Co phan Chung khoan SSI), Vietnam\'s leading securities company.\n\n';
+  var p2 = 'EXPERTISE: stocks (VN-Index, global markets), crypto, forex, macroeconomics, personal finance, politics vs markets.\n\n';
+  var p3 = 'BRAND VOICE: friendly, witty, trustworthy, polite. Never reckless or misleading. Always responsible. Add disclaimers naturally.\n\n';
+  var p4 = 'TONE BOOSTERS: ' + vibes + '\n\nDOMAIN: ' + domain + '\n\n';
+  var p5 = getLangRule() + '\n\n';
+  var p6 = 'PLATFORM KNOWLEDGE BASE (2025):\n';
+  p6 += 'FACEBOOK: First 30-60 mins critical. Rewards genuine conversations. Penalizes engagement bait. 98% top posts have no outbound link. 50-99 chars max reach. Finance: never imply risk-free returns.\n';
+  p6 += 'INSTAGRAM: DM shares 3-5x > likes. Saves key. Keyword captions > hashtags. First 125 chars = hook. 3-5 niche hashtags. Carousels outperform. Finance best as educational how-to (saves) or market commentary (DMs).\n';
+  p6 += 'LINKEDIN: NOT designed to go viral. Consumption rate matters. 1300-3000 chars optimal. Max 2 hashtags. Carousel/doc 11x more impressions. Avoid engagement bait (70% reach penalty). Keywords > hashtags.\n';
+  p6 += 'GOOGLE SEO: Finance = YMYL, highest E-E-A-T scrutiny. Structure: SEO Title -> TL;DR -> H2 sections -> FAQ -> CTA. Keyword in title + first 100 words + one H2. Investment disclaimer mandatory.\n';
+  p6 += 'EMAIL: Subject under 50 chars. No spam words: free/guaranteed/risk-free. Preview text 35-90 chars. Single CTA. P.S. line most-read. Tue-Thu 9 AM best. Never promise returns.\n\n';
+  var p7 = 'DEEP RESEARCH (execute before writing):\n';
+  p7 += 'SOURCE PRIORITY (cite by name inline): 1) SSI official - ssi.com.vn, SSI Research reports 2) CafeF, Vietstock, VnEconomy, Dau Tu, VnExpress Finance, NDH, Nguoi Lao Dong, Thanh Nien, Tuoi Tre, Tap chi Tai chinh 3) SBV, SSC, GSO 4) Bloomberg/Reuters/FT only for global macro.\n';
+  p7 += 'NEVER fabricate numbers. Always attribute data to named source.\n';
+  p7 += 'FIND OUTSTANDING NUMBERS: YTD returns, quarterly growth %, VN-Index level, sector P/E, SSI market share/revenue, GDP growth, CPI. Use exact numbers - "tang 23.4%" beats "tang manh". Prioritize surprising numbers.\n';
+  p7 += 'BENCHMARK COMPARISONS: Bank savings rate ~4.5-5.5%/year (the safe alternative baseline). VN-Index vs SET/STI/HSI. CPI for real returns. USD/VND. Gold SJC. Frame conversationally: "Neu ban gui tiet kiem, ban duoc X%. Nhung neu..."\n';
+  p7 += 'TREND ANGLES: Viral VN social media trends? Relatable analogy (boba tea, rent, salary)? e.g. "23% return = 46 ly tra sua moi thang voi moi 10 trieu dau tu"\n';
+  p7 += 'COMPLIANCE: Flag investment advice claims. All performance data needs natural disclaimer. Extra care on crypto/leverage/derivatives.\n\n';
+  var p8 = 'CONTENT CREATION WORKFLOW:\n';
+  p8 += 'STEP 1 UNDERSTAND BRIEF: Identify topic, domain, platform, language, tone. Define audience (Vietnamese retail investors, Gen Z/millennials).\n';
+  p8 += 'STEP 2 DEEP RESEARCH: Execute all research instructions above. Find real sources, outstanding numbers, benchmark comparisons, relatable angles.\n';
+  p8 += 'STEP 3 APPLY PLATFORM RULES: Load algorithm guidelines. Identify length/structure/hashtag/link constraints.\n';
+  p8 += 'STEP 4 BUILD OUTLINE: Map Hook -> Core message -> Supporting points -> CTA. Choose most compelling angle.\n';
+  p8 += 'STEP 5 WRITE DRAFT: Follow language rule strictly. Apply brand voice + tone boosters. Embed platform best practices. Add disclaimer naturally.\n';
+  p8 += 'STEP 6 REVIEW AND REFINE: Does it sound like real Gen Z not AI bot? Language rule followed? Hook strong? Financial guidelines met? All platform requirements met? Fix before outputting.\n';
+  p8 += 'Output ONLY the final polished content. Do not show thinking or label the steps.\n\n';
+  var p9 = 'CONTENT TYPE INSTRUCTIONS:\n' + fmtGuide(ctype) + '\n\n';
+  p9 += 'Sound like a smart, well-informed friend - not a boring analyst report. Use slang, trending references, and cultural context naturally.';
+  return p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+}
+
+function stepTo(n) {
+  for (var i = 1; i <= 6; i++) {
+    var el = document.getElementById('s' + i);
+    if (i < n) { el.className = 'stp done'; }
+    else if (i === n) { el.className = 'stp act'; }
+    else { el.className = 'stp'; }
+  }
+}
+
+async function generate() {
+  var topic = document.getElementById('topic').value.trim();
+  if (!topic) { alert('Nhap topic di bro!'); return; }
+  var ctype = document.getElementById('ctype').value;
+  var domain = document.getElementById('domain').value;
+  var vibes = getVibes();
+  var proc = document.getElementById('proc');
+  var outc = document.getElementById('outc');
+  var outb = document.getElementById('outb');
+  var otag = document.getElementById('otag');
+  var fbs = document.getElementById('fbs');
+  var tabs = document.getElementById('out-tabs');
+
+  otag.textContent = ctypeLabel(ctype) + ' - ' + domain + ' - ' + langLabel();
+  proc.className = 'proc show';
+  outc.className = 'outc';
+  fbs.className = 'fb';
+  tabs.className = 'out-tabs';
+
+  stepTo(1);
+  setTimeout(function() { stepTo(2); }, 600);
+  setTimeout(function() { stepTo(3); }, 1500);
+  setTimeout(function() { stepTo(4); }, 2200);
+  setTimeout(function() {
+    stepTo(5);
+    outc.className = 'outc show';
+    outb.innerHTML = '<span class="spin">Dang viet content xin... giu nguyen nha &#128293;</span>';
+  }, 3000);
+
+  var apiKey = getApiKey();
+  if (!apiKey) {
+    outc.className = 'outc show';
+    outb.textContent = 'Please enter your Anthropic API key in the bar at the top first.';
+    for (var i = 1; i <= 6; i++) { document.getElementById('s' + i).className = 'stp'; }
+    document.getElementById('proc').className = 'proc';
+    return;
+  }
+  var fileCtx = await extractFileContext();
+  var sys = buildSystem(ctype, vibes, domain);
+  if (fileCtx) sys += fileCtx;
+  var usr = 'Topic: ' + topic + '\nDomain: ' + domain + '\nContent type: ' + ctypeLabel(ctype);
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1500, system: sys, messages: [{ role: 'user', content: usr }] })
+    });
+    var data = await res.json();
+    var txt = '';
+    if (data.content) { for (var b = 0; b < data.content.length; b++) { if (data.content[b].type === 'text') { txt = data.content[b].text; break; } } }
+    var finalTxt = txt || 'Loi roi bro, thu lai nha!';
+    outb.textContent = finalTxt;
+    saveVersion(finalTxt, ctypeLabel(ctype) + ' - ' + domain + ' - ' + langLabel(), '', null);
+  } catch(e) {
+    outb.textContent = 'Co loi xay ra, thu lai nhe!';
+  }
+  stepTo(6);
+  setTimeout(function() {
+    for (var i = 1; i <= 6; i++) { document.getElementById('s' + i).className = 'stp done'; }
+    showFb();
+  }, 600);
+}
+
+function renderOutputTabs(ctypes, domain) {
+  var tabs = document.getElementById('out-tabs');
+  var outb = document.getElementById('outb');
+  var otag = document.getElementById('otag');
+  if (ctypes.length === 1) {
+    tabs.className = 'out-tabs';
+    activeTab = ctypes[0];
+    otag.textContent = ctypeLabel(ctypes[0]) + ' - ' + domain + ' - ' + langLabel();
+    outb.textContent = multiOutputs[ctypes[0]] || '';
+    return;
+  }
+  tabs.className = 'out-tabs show';
+  var html = '';
+  for (var i = 0; i < ctypes.length; i++) {
+    html += '<button class="out-tab' + (i === 0 ? ' active' : '') + '" data-ct="' + ctypes[i] + '" onclick="switchTab(this)">' + ctypeLabel(ctypes[i]) + '</button>';
+  }
+  tabs.innerHTML = html;
+  activeTab = ctypes[0];
+  otag.textContent = ctypeLabel(ctypes[0]) + ' - ' + domain + ' - ' + langLabel();
+  outb.textContent = multiOutputs[ctypes[0]] || '';
+}
+
+function switchTab(el) {
+  var ct = el.getAttribute('data-ct');
+  var allTabs = document.querySelectorAll('.out-tab');
+  for (var i = 0; i < allTabs.length; i++) { allTabs[i].className = 'out-tab'; }
+  el.className = 'out-tab active';
+  activeTab = ct;
+  var domain = document.getElementById('domain').value;
+  document.getElementById('otag').textContent = ctypeLabel(ct) + ' - ' + domain + ' - ' + langLabel();
+  document.getElementById('outb').textContent = multiOutputs[ct] || '';
+  document.getElementById('fbs').className = 'fb';
+}
+
+function showFb() {
+  var fbs = document.getElementById('fbs');
+  fbs.className = 'fb show';
+  curRating = null;
+  document.getElementById('rbg').className = 'rbtn';
+  document.getElementById('rbb').className = 'rbtn';
+  document.getElementById('fbt').className = 'fbtxt';
+  document.getElementById('fbac').className = 'fbacts';
+  document.getElementById('fbdn').className = 'fbdone';
+  document.getElementById('fbt').value = '';
+}
+
+function rate(v) {
+  curRating = v;
+  document.getElementById('rbg').className = 'rbtn' + (v === 'good' ? ' g' : '');
+  document.getElementById('rbb').className = 'rbtn' + (v === 'bad' ? ' b' : '');
+  document.getElementById('fbt').className = 'fbtxt show';
+  document.getElementById('fbac').className = 'fbacts show';
+  document.getElementById('fbdn').className = 'fbdone';
+  document.getElementById('fbt').placeholder = v === 'good' ? 'What worked well? Notes for next time...' : 'Tell me what to improve - tone, length, angle, phrasing...';
+}
+
+function saveFb() {
+  if (!curRating) return;
+  var txt = document.getElementById('fbt').value.trim();
+  var tag = document.getElementById('otag').textContent;
+  var now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  fbHistory.push({ r: curRating, t: txt, tag: tag, time: now });
+  renderFbLog();
+  document.getElementById('fbdn').className = 'fbdone show';
+  document.getElementById('fbt').className = 'fbtxt';
+  document.getElementById('fbac').className = 'fbacts';
+  document.getElementById('fbt').value = '';
+  curRating = null;
+  document.getElementById('rbg').className = 'rbtn';
+  document.getElementById('rbb').className = 'rbtn';
+}
+
+function renderFbLog() {
+  var log = document.getElementById('fblog');
+  var html = '';
+  var items = fbHistory.slice().reverse();
+  for (var i = 0; i < items.length; i++) {
+    var e = items[i];
+    var icon = e.r === 'good' ? '&#10003;' : '&#10005;';
+    var lbl = e.r === 'good' ? 'Looks good' : 'Needs work';
+    var body = e.t ? '<div class="fbet">' + e.t + '</div>' : '';
+    html += '<div class="fbe"><div class="fbem">' + icon + ' ' + lbl + ' &middot; ' + e.tag + ' &middot; ' + e.time + '</div>' + body + '</div>';
+  }
+  log.innerHTML = html;
+}
+
+async function regenFb() {
+  var txt = document.getElementById('fbt').value.trim();
+  if (!txt) { alert('Add your feedback first!'); return; }
+  var lastContent = document.getElementById('outb').textContent;
+  var ctype = document.getElementById('ctype').value;
+  var domain = document.getElementById('domain').value;
+  var topic = document.getElementById('topic').value.trim();
+  saveFb();
+  var outb = document.getElementById('outb');
+  outb.innerHTML = '<span class="spin">Dang chinh sua theo feedback... &#128295;</span>';
+  document.getElementById('fbs').className = 'fb';
+  var sys = 'You are a Gen Z content creator for SSI Securities. Revise the content below based on the user feedback. Keep same topic, platform, domain. Apply feedback precisely. ' + getLangRule();
+  var usr = 'Original content:\n' + lastContent + '\n\nFeedback: ' + txt + '\n\nTopic: ' + topic + '\nPlatform: ' + ctype + '\nDomain: ' + domain + '\n\nRewrite applying this feedback.';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1500, system: sys, messages: [{ role: 'user', content: usr }] })
+    });
+    var data = await res.json();
+    var t = '';
+    if (data.content) { for (var b = 0; b < data.content.length; b++) { if (data.content[b].type === 'text') { t = data.content[b].text; break; } } }
+    var regenTxt = t || 'Loi roi, thu lai nha!';
+    outb.textContent = regenTxt;
+    saveVersion(regenTxt, ctypeLabel(document.getElementById('ctype').value) + ' - ' + document.getElementById('domain').value + ' - ' + langLabel(), txt, curRating);
+    showFb();
+  } catch(e) {
+    outb.textContent = 'Co loi, thu lai nhe!';
+    showFb();
+  }
+}
+
+function copyOut() {
+  var txt = document.getElementById('outb').textContent;
+  navigator.clipboard.writeText(txt).then(function() {
+    var btn = document.querySelector('.cpbtn');
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+  });
+}
+
+// Version history
+var versions = [];
+
+function saveVersion(text, label, fbNote, fbRating) {
+  var now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  versions.push({ text: text, label: label, time: now, fbNote: fbNote || '', fbRating: fbRating || null, id: versions.length + 1 });
+  renderVersions();
+}
+
+function renderVersions() {
+  var vh = document.getElementById('vh');
+  var vlist = document.getElementById('vlist');
+  var vcount = document.getElementById('vh-count');
+  if (versions.length === 0) { vh.className = 'vh'; return; }
+  vh.className = 'vh show';
+  vcount.textContent = versions.length + (versions.length === 1 ? ' version' : ' versions');
+  var html = '';
+  var items = versions.slice().reverse();
+  for (var i = 0; i < items.length; i++) {
+    var v = items[i];
+    var isLatest = v.id === versions.length;
+    var numClass = isLatest ? 'vnum latest' : 'vnum';
+    var numLabel = isLatest ? 'v' + v.id + ' Latest' : 'v' + v.id;
+    var fbPill = '';
+    if (v.fbRating === 'good') fbPill = '<span class="vfb-pill vfb-good">&#10003; Looks good</span>';
+    else if (v.fbRating === 'bad') fbPill = '<span class="vfb-pill vfb-bad">&#10005; Needs work</span>';
+    var fbBlock = '';
+    if (v.fbNote) {
+      fbBlock = '<div class="vcard-fb"><div class="vcard-fb-lbl">Feedback applied</div>' + v.fbNote + '</div>';
+    }
+    var preview = v.text.substring(0, 80).replace(/</g, '&lt;').replace(/>/g, '&gt;') + (v.text.length > 80 ? '...' : '');
+    html += '<div class="vcard" id="vc' + v.id + '">';
+    html += '<div class="vcard-hdr" onclick="toggleV(' + v.id + ')">';
+    html += '<div class="vcard-meta">';
+    html += '<span class="' + numClass + '">' + numLabel + '</span>';
+    html += '<span class="vtag">' + v.label + '</span>';
+    if (fbPill) html += fbPill;
+    html += '</div>';
+    html += '<div style="display:flex;gap:8px;align-items:center;">';
+    html += '<span class="vtime">' + v.time + '</span>';
+    html += '<span class="vtoggle" id="vtg' + v.id + '">&#9660;</span>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="vcard-body' + (isLatest ? ' open' : '') + '" id="vb' + v.id + '">';
+    html += '<div class="vcard-content">' + v.text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+    html += fbBlock;
+    html += '<button class="vcp-btn" onclick="cpVersion(' + v.id + ')">Copy this version</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+  vlist.innerHTML = html;
+  var exportBtn = document.getElementById('export-btn');
+  if (exportBtn) exportBtn.style.display = versions.length > 0 ? 'inline-block' : 'none';
+}
+
+function exportAll() {
+  if (versions.length === 0) return;
+  // Build a clean text file with all versions
+  var lines = [];
+  lines.push('SSI CONTENT AGENT - GENERATED CONTENT');
+  lines.push('Exported: ' + new Date().toLocaleString('vi-VN'));
+  lines.push('Total versions: ' + versions.length);
+  lines.push('');
+  for (var i = 0; i < versions.length; i++) {
+    var v = versions[i];
+    lines.push('='.repeat(60));
+    lines.push('VERSION ' + v.id + ' - ' + v.label + ' - ' + v.time);
+    if (v.fbNote) lines.push('Feedback applied: ' + v.fbNote);
+    lines.push('='.repeat(60));
+    lines.push(v.text);
+    lines.push('');
+  }
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'ssi-content-' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function toggleV(id) {
+  var body = document.getElementById('vb' + id);
+  var tog = document.getElementById('vtg' + id);
+  if (body.classList.contains('open')) {
+    body.className = 'vcard-body';
+    tog.innerHTML = '&#9660;';
+  } else {
+    body.className = 'vcard-body open';
+    tog.innerHTML = '&#9650;';
+  }
+}
+
+function cpVersion(id) {
+  for (var i = 0; i < versions.length; i++) {
+    if (versions[i].id === id) {
+      navigator.clipboard.writeText(versions[i].text).then(function() {
+        var btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy this version'; }, 1500);
+      });
+      break;
+    }
+  }
+}
+
+window.setLang = setLang;
+window.saveApiKey = saveApiKey;
+window.apiKeyChanged = apiKeyChanged;
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+window.overlayClick = overlayClick;
+window.toggleVibe = toggleVibe;
+window.generate = generate;
+window.copyOut = copyOut;
+window.rate = rate;
+window.saveFb = saveFb;
+window.regenFb = regenFb;
+window.showFb = showFb;
+window.toggleV = toggleV;
+window.exportAll = exportAll;
+window.cpVersion = cpVersion;
+window.toggleCtype = toggleCtype;
+window.switchTab = switchTab;
+window.removeFile = removeFile;
+window.handleFiles = handleFiles;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.handleDrop = handleDrop;
+</script>
+</body>
+</html>
